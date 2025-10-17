@@ -1,4 +1,4 @@
-import { useTheme } from '../../context/ThemeProvider';
+import { useTheme } from '../../hooks/useTheme';
 
 /**
  * Componente para alternar entre tema claro y oscuro

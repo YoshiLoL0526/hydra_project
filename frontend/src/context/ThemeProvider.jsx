@@ -1,21 +1,6 @@
 import PropTypes from 'prop-types';
-import { createContext, useContext, useEffect, useState } from 'react';
-
-const ThemeContext = createContext({
-    theme: 'light',
-    toggleTheme: () => { },
-});
-
-/**
- * Hook para acceder al contexto de tema
- */
-export const useTheme = () => {
-    const context = useContext(ThemeContext);
-    if (!context) {
-        throw new Error('useTheme debe ser usado dentro de ThemeProvider');
-    }
-    return context;
-};
+import { useEffect, useState } from 'react';
+import { ThemeContext } from './ThemeContext';
 
 /**
  * Proveedor del contexto de tema

@@ -119,3 +119,42 @@ hydra_project/
 - `pnpm run build` - Construye la aplicación para producción
 - `pnpm run preview` - Vista previa de la build de producción
 - `pnpm run lint` - Ejecuta ESLint
+
+## 🐳 Instalación y Ejecución con Docker
+
+Si prefieres usar Docker para ejecutar el proyecto de manera simplificada, sigue estos pasos. Esta opción configura automáticamente todos los servicios necesarios (bases de datos, N8N y frontend) en contenedores.
+
+### Prerrequisitos
+
+- 🐳 **Docker** (versión 20.10 o superior)
+- 🐳 **Docker Compose** (versión 1.29 o superior)
+
+### Pasos
+
+1. **Clonar el repositorio**:
+   ```bash
+   git clone <url-del-repositorio>
+   cd hydra_project
+   ```
+
+2. **Ejecutar con Docker Compose**:
+   ```bash
+   docker-compose up --build
+   ```
+   Esto construirá e iniciará todos los servicios:
+   - Base de datos PostgreSQL para el proyecto (puerto 5433)
+   - Base de datos PostgreSQL para N8N
+   - Servicio N8N (puerto 5678)
+   - Frontend React (puerto 3000)
+
+3. **Acceder a la aplicación**:
+   - **Frontend**: http://localhost:3000
+   - **N8N**: http://localhost:5678
+   - **Base de datos del proyecto**: localhost:5433
+
+### Notas Importantes
+
+- Se debe importar el workflow desde `workflow/n8n_workflow.json`
+- El frontend está configurado para consumir el webhook en `http://localhost:5678/webhook/e82e4243-9ff0-44ab-8b9f-837db6814a79`
+- Para detener los contenedores: `docker-compose down`
+- Para reconstruir después de cambios: `docker-compose up --build --force-recreate`

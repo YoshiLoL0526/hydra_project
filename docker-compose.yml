@@ -1,0 +1,80 @@
+services:
+  # Base de datos para el proyecto (PostgreSQL)
+  postgres_project:
+    image: postgres:15
+    container_name: hydra_project_db
+    environment:
+      POSTGRES_DB: hydra_project
+      POSTGRES_USER: hydra_user
+      POSTGRES_PASSWORD: hydra_password
+    volumes:
+      - postgres_project_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - hydra_network
+    restart: unless-stopped
+
+  # Base de datos para N8N (PostgreSQL)
+  postgres_n8n:
+    image: postgres:15
+    container_name: n8n_db
+    environment:
+      POSTGRES_DB: n8n
+      POSTGRES_USER: n8n_user
+      POSTGRES_PASSWORD: n8n_password
+    volumes:
+      - postgres_n8n_data:/var/lib/postgresql/data
+    networks:
+      - hydra_network
+    restart: unless-stopped
+
+  # Servicio N8N
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres_n8n
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=n8n_user
+      - DB_POSTGRESDB_PASSWORD=n8n_password
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://n8n:5678/webhook/
+    depends_on:
+      - postgres_n8n
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflow:/home/node/.n8n/workflows
+    networks:
+      - hydra_network
+    restart: unless-stopped
+
+  # Frontend (React con Vite)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:5678/webhook/e82e4243-9ff0-44ab-8b9f-837db6814a79
+    container_name: hydra_frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - hydra_network
+    restart: unless-stopped
+
+volumes:
+  postgres_project_data:
+  postgres_n8n_data:
+  n8n_data:
+
+
+networks:
+  hydra_network:
+    driver: bridge

@@ -1,0 +1,381 @@
+{
+  "name": "Hydra Project Register Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"User created successfully\"\n}",
+        "options": {
+          "responseCode": 201
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        784,
+        80
+      ],
+      "id": "0767b193-7302-48c3-9b54-fd4301f27d19",
+      "name": "User created"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e82e4243-9ff0-44ab-8b9f-837db6814a79",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -784,
+        -16
+      ],
+      "id": "1a162b3a-f41c-4bd7-80a0-b59b2c6df46b",
+      "name": "Webhook",
+      "webhookId": "e82e4243-9ff0-44ab-8b9f-837db6814a79",
+      "alwaysOutputData": false,
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE IF NOT EXISTS users (\n    id SERIAL PRIMARY KEY,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    full_name VARCHAR(255),\n    password_hash VARCHAR(255),\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -608,
+        -16
+      ],
+      "id": "fdc82b56-9718-415d-ba0b-252b25a8f5f6",
+      "name": "Create Database",
+      "credentials": {
+        "postgres": {
+          "id": "QneRzLl1EKmdFdLM",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id FROM users WHERE email = '{{ $('Webhook').item.json.body.email }}' LIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -416,
+        -16
+      ],
+      "id": "38cb6410-d4ec-48a6-a5ba-fcfebd3207da",
+      "name": "Check if User's email exists",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "QneRzLl1EKmdFdLM",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e1feeaae-f897-4e26-a947-eff86bf86cbc",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        -16
+      ],
+      "id": "553b9b9a-a444-4835-b4eb-9cb5b9b12c4b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1df051ea-3888-4e07-b49b-1f9ea67a7da0",
+              "name": "full_name",
+              "value": "={{ $('Webhook').item.json.body.full_name }}",
+              "type": "string"
+            },
+            {
+              "id": "a25ddfb1-7729-4a51-9c6b-f4876551cb05",
+              "name": "email",
+              "value": "={{ $('Webhook').item.json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "e5093f69-b2c5-41d0-aba8-6649d7b47e4d",
+              "name": "password_hash",
+              "value": "={{ $json.data }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        176,
+        80
+      ],
+      "id": "a81bab32-0578-4a7a-92f0-a281ac4cd41a",
+      "name": "Include password hash"
+    },
+    {
+      "parameters": {
+        "type": "SHA256",
+        "value": "={{ $('Webhook').item.json.body.password }}"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "3c9f0200-b5ff-4727-b978-220282ffcee5",
+      "name": "Encrypt Password"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"User's email already exists\"\n}",
+        "options": {
+          "responseCode": 409
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        -112
+      ],
+      "id": "99790f03-4b1b-4416-809f-d3bae672fbe8",
+      "name": "User found"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO users (full_name, email, password_hash)\nVALUES ('{{ $json.full_name }}', '{{ $json.email }}', '{{ $json.password_hash }}')\nRETURNING id, full_name, email, created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        400,
+        80
+      ],
+      "id": "b5e6fe39-5f2e-4abb-ab40-fad3fe3b4cee",
+      "name": "Insert user on database",
+      "credentials": {
+        "postgres": {
+          "id": "QneRzLl1EKmdFdLM",
+          "name": "Postgres account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "fromEmail": "yoshilol0526@gmail.com",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Bienvenido al proyecto Hydra!",
+        "html": "=<!DOCTYPE html>\n<html lang=\"es\">\n\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Bienvenido al proyecto Hydra</title>\n</head>\n\n<body style=\"margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;\">\n\n    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\"\n        style=\"table-layout: fixed; background-color: #f4f4f4;\">\n        <tr>\n            <td align=\"center\" style=\"padding: 20px 0;\">\n\n                <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"600\"\n                    style=\"background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);\">\n\n                    <tr>\n                        <td style=\"padding: 40px 30px 40px 30px; color: #333333;\">\n\n                            <p style=\"font-size: 16px; line-height: 1.6; margin-bottom: 20px;\">\n                                \"¡Hola {{ $json.full_name }}, bienvenido a nuestra plataforma!\n                            </p>\n                        </td>\n                    </tr>\n                </table>\n            </td>\n        </tr>\n    </table>\n</body>\n\n</html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        608,
+        80
+      ],
+      "id": "96d44989-abce-4b2a-9f23-bfa03eea68d1",
+      "name": "Send email",
+      "webhookId": "13ad2e8b-af45-4c9a-acf4-f1ae6e4edba6",
+      "credentials": {
+        "smtp": {
+          "id": "jJLgpDJkhQfOzcxl",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"message\": \"An error ocurred with database\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        336
+      ],
+      "id": "b989b3b1-60a3-4778-82d6-a5dc8054d593",
+      "name": "Database Error"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Database": {
+      "main": [
+        [
+          {
+            "node": "Check if User's email exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Database Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if User's email exists": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Database Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "User found",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Encrypt Password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Include password hash": {
+      "main": [
+        [
+          {
+            "node": "Insert user on database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Encrypt Password": {
+      "main": [
+        [
+          {
+            "node": "Include password hash",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert user on database": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Database Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "User created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "ceb64d05-dc08-4d03-ac9d-3d938c94095a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f99624486b3c9abaa5107a5b222f5c790cbb44352f3da7cd31d3ec84534a4251"
+  },
+  "id": "dbQve5eF1CSD2Hsh",
+  "tags": []
+}

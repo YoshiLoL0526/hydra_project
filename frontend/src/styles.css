@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+/* ==================== Variables CSS ==================== */
+:root {
+  /* Colores primarios */
+  --color-primary: 79 70 229; /* indigo-600 */
+  --color-primary-hover: 67 56 202; /* indigo-700 */
+  
+  /* Colores de fondo - Tema claro */
+  --bg-primary: 255 255 255; /* white */
+  --bg-secondary: 239 246 255; /* blue-50 */
+  --bg-gradient-from: 239 246 255; /* blue-50 */
+  --bg-gradient-to: 224 231 255; /* indigo-100 */
+  
+  /* Colores de texto - Tema claro */
+  --text-primary: 17 24 39; /* gray-900 */
+  --text-secondary: 75 85 99; /* gray-600 */
+  --text-muted: 107 114 128; /* gray-500 */
+  
+  /* Colores de borde */
+  --border-default: 209 213 219; /* gray-300 */
+  --border-error: 239 68 68; /* red-500 */
+  
+  /* Colores de estado */
+  --color-success: 34 197 94; /* green-500 */
+  --color-success-bg: 240 253 244; /* green-50 */
+  --color-success-text: 22 101 52; /* green-800 */
+  --color-success-hover: 22 163 74; /* green-600 */
+  
+  --color-error: 239 68 68; /* red-500 */
+  --color-error-bg: 254 242 242; /* red-50 */
+  --color-error-text: 153 27 27; /* red-800 */
+  --color-error-hover: 220 38 38; /* red-700 */
+  
+  /* Sombras */
+  --shadow-default: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  
+  /* Efectos */
+  --backdrop-blur: blur(4px);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+}
+
+/* ==================== Tema Oscuro ==================== */
+[data-theme="dark"] {
+  /* Colores primarios */
+  --color-primary: 99 102 241; /* indigo-500 */
+  --color-primary-hover: 79 70 229; /* indigo-600 */
+  
+  /* Colores de fondo - Tema oscuro */
+  --bg-primary: 31 41 55; /* gray-800 */
+  --bg-secondary: 17 24 39; /* gray-900 */
+  --bg-gradient-from: 17 24 39; /* gray-900 */
+  --bg-gradient-to: 30 27 75; /* indigo-950 */
+  
+  /* Colores de texto - Tema oscuro */
+  --text-primary: 243 244 246; /* gray-100 */
+  --text-secondary: 209 213 219; /* gray-300 */
+  --text-muted: 156 163 175; /* gray-400 */
+  
+  /* Colores de borde */
+  --border-default: 75 85 99; /* gray-600 */
+  --border-error: 239 68 68; /* red-500 */
+  
+  /* Colores de estado - Ajustados para tema oscuro */
+  --color-success: 34 197 94; /* green-500 */
+  --color-success-bg: 20 83 45; /* green-900 */
+  --color-success-text: 187 247 208; /* green-200 */
+  --color-success-hover: 22 163 74; /* green-600 */
+  
+  --color-error: 239 68 68; /* red-500 */
+  --color-error-bg: 127 29 29; /* red-900 */
+  --color-error-text: 254 202 202; /* red-200 */
+  --color-error-hover: 220 38 38; /* red-700 */
+  
+  /* Sombras */
+  --shadow-default: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+  --shadow-modal: 0 25px 50px -12px rgb(0 0 0 / 0.7);
+  
+  /* Efectos */
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+}
+
+/* ==================== Animaciones ==================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+/* ==================== Clases personalizadas ==================== */
+.bg-primary {
+  background-color: rgb(var(--bg-primary));
+}
+
+.bg-secondary {
+  background-color: rgb(var(--bg-secondary));
+}
+
+.text-primary {
+  color: rgb(var(--text-primary));
+}
+
+.text-secondary {
+  color: rgb(var(--text-secondary));
+}
+
+.text-muted {
+  color: rgb(var(--text-muted));
+}
+
+.border-default {
+  border-color: rgb(var(--border-default));
+}
+
+.border-error {
+  border-color: rgb(var(--border-error));
+}
+
+/* Transiciones suaves para el cambio de tema */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Desactivar transiciones en animaciones específicas */
+.animate-fadeIn,
+.animate-scaleIn,
+.animate-slideDown {
+  transition: none;
+}
